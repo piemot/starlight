@@ -1,0 +1,6 @@
+# Core directories
+node_modules
+dist
+
+# Platform specific
+.DS_Store
