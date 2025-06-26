@@ -7,7 +7,9 @@
 	"scripts": {
 		"start": "node dist/index.js",
 		"build": "tsc",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"lint": "biome check --write",
+		"deploy": "node --experimental-strip-types scripts/deploy.ts"
 	},
 	"dependencies": {
 		"@discordjs/core": "^2.1.1",

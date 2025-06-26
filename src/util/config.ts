@@ -1,5 +1,4 @@
-import type { Stats } from "node:fs";
-import fs, { readFile } from "node:fs/promises";
+import fs from "node:fs/promises";
 import { dirname, default as path, resolve } from "node:path";
 import TOML from "smol-toml";
 import { z } from "zod";
@@ -8,60 +7,47 @@ const snowflakeSchema = z
 	.string()
 	.regex(/^\d{17,20}$/, "invalid Snowflake value");
 
-const keysSchema = z.object({
+const configSchema = z.object({
 	bot: z.object({
 		id: snowflakeSchema,
 		token: z.string().min(1),
 	}),
 	readyChannel: snowflakeSchema,
+	service: z.object({
+		availability: z.object({
+			channel: snowflakeSchema,
+			message: z.union([snowflakeSchema, z.literal("build")]),
+		}),
+	}),
 });
 
 export const config: Config = await loadConfig();
 
-export type Config = {
-	keys: z.infer<typeof keysSchema>;
-};
+export type Config = z.infer<typeof configSchema>;
 
 async function loadConfig(): Promise<Config> {
-	const configDir = await findConfigDir();
-	if (!configDir) {
-		throw new Error("Failed to find a valid config directory.");
+	const configContents = await getConfigContents();
+	if (!configContents) {
+		throw new Error("Failed to find a valid config file.");
 	}
-	const keyfile = path.join(configDir, "keys.toml");
-	const keybuf = await readFile(keyfile);
-	const keysRaw = TOML.parse(keybuf.toString());
-	return {
-		keys: keysSchema.parse(keysRaw),
-	};
+	const configRaw = TOML.parse(configContents);
+	return configSchema.parse(configRaw);
 }
 
 /**
  * Walks up the directory tree, starting from this directory, until it finds
- * a directory named `config` containing a `keys.toml` file.
+ * one containing a `config.toml` file.
  *
- * @returns the path to the `config` directory.
+ * @returns the value of that config file.
  */
-async function findConfigDir() {
+async function getConfigContents() {
 	for (const dir of walkUp(import.meta.dirname)) {
-		const checkDir = path.join(dir, "config");
-		let checkStat: Stats;
+		const checkFile = path.join(dir, "config.toml");
+
+		let content: string;
 		try {
-			checkStat = await fs.stat(checkDir);
-		} catch (err) {
-			if ((err as { code: string }).code === "ENOENT") {
-				// checkDir does not exist
-				continue;
-			} else {
-				throw err;
-			}
-		}
-		if (!checkStat.isDirectory()) {
-			continue;
-		}
-		const checkFile = path.join(dir, "config", "keys.toml");
-		let fileStat: Stats;
-		try {
-			fileStat = await fs.stat(checkFile);
+			const file = await fs.readFile(checkFile);
+			content = file.toString();
 		} catch (err) {
 			if ((err as { code: string }).code === "ENOENT") {
 				// checkFile does not exist
@@ -70,11 +56,8 @@ async function findConfigDir() {
 				throw err;
 			}
 		}
-		if (!fileStat.isFile()) {
-			continue;
-		}
 
-		return checkDir;
+		return content;
 	}
 
 	return null;

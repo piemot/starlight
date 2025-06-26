@@ -17,7 +17,7 @@ export default {
 					description:
 						`**Round-trip:** \`${Date.now() - interaction.createdTimestamp} ms\`\n` +
 						`**Heartbeat:** \`${heartbeat}\``,
-					timestamp: new Date().toUTCString(),
+					timestamp: new Date().toISOString(),
 				},
 			],
 			ephemeral: true,

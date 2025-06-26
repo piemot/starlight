@@ -33,4 +33,4 @@ for (const event of events) {
 	]);
 }
 
-void client.login(config.keys.bot.token);
+void client.login(config.bot.token);

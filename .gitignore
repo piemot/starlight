@@ -2,5 +2,8 @@
 node_modules
 dist
 
+# Secret
+config.toml
+
 # Platform specific
 .DS_Store
