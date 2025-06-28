@@ -9,7 +9,8 @@
 		"build": "tsc",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check --write",
-		"deploy": "node --experimental-strip-types scripts/deploy.ts"
+		"deploy": "node --experimental-strip-types scripts/deploy.ts",
+		"launch": "pnpm install --frozen-lockfile && pnpm drizzle-kit push && pnpm run build && pnpm run start"
 	},
 	"dependencies": {
 		"@discordjs/core": "^2.1.1",
@@ -26,6 +27,7 @@
 		"@biomejs/biome": "2.0.5",
 		"@types/better-sqlite3": "^7.6.13",
 		"drizzle-kit": "^0.31.2",
+		"tar": "^7.4.3",
 		"typescript": "^5.8.3"
 	},
 	"engines": {
