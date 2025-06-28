@@ -14,6 +14,7 @@ const configSchema = z.object({
 		token: z.string().min(1),
 	}),
 	"ready-channel": snowflakeSchema,
+	"review-channel": snowflakeSchema,
 	services: z.object({
 		availability: z.object({
 			channel: snowflakeSchema,
@@ -29,6 +30,7 @@ export interface Config {
 		token: string;
 	};
 	readyChannel: SendableChannels;
+	reviewChannel: SendableChannels;
 	services: {
 		availability: {
 			channel: SendableChannels;
@@ -63,6 +65,13 @@ export async function loadConfig(client: Client): Promise<Config> {
 		throw new Error("Invalid `config.ready-channel`");
 	}
 
+	const reviewChannel = await client.channels.fetch(
+		configFile["review-channel"],
+	);
+	if (!reviewChannel || !reviewChannel.isSendable()) {
+		throw new Error("Invalid `config.review-channel`");
+	}
+
 	const serviceChannel = await client.channels.fetch(
 		configFile.services.availability.channel,
 	);
@@ -73,6 +82,7 @@ export async function loadConfig(client: Client): Promise<Config> {
 	config = {
 		bot: configFile.bot,
 		readyChannel,
+		reviewChannel,
 		services: {
 			availability: {
 				channel: serviceChannel,
