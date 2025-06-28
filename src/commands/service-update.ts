@@ -10,6 +10,7 @@ import {
 	type InteractionReplyOptions,
 	type InteractionUpdateOptions,
 	MessageFlags,
+	PermissionsBitField,
 	roleMention,
 } from "discord.js";
 import { nanoid } from "nanoid";
@@ -41,6 +42,8 @@ export default {
 				description: "Update any service's availability",
 			},
 		],
+		default_member_permissions:
+			PermissionsBitField.Flags.ManageGuild.toString(),
 		contexts: [InteractionContextType.Guild],
 	},
 	async execute(interaction, { config }) {
