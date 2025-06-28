@@ -9,10 +9,20 @@ token = "<your token here>"
 channel = "1201407449840754739"
 notify-role = "997525482197242018"
 
-[services.types]
-graphics-non-animated = "Non-Animated GFX"
-graphics-animated = "Animated GFX"
-server-building = "Server Building"
-marketing = "Marketing"
-content = "Content Creation"
-video = "VFX"
+[services.types.graphics-non-animated]
+name = "Non-Animated GFX"
+
+[services.types.graphics-animated]
+name = "Animated GFX"
+
+[services.types.server-building]
+name = "Server Building"
+
+[services.types.marketing]
+name = "Marketing"
+
+[services.types.content]
+name = "Content Creation"
+
+[services.types.video]
+name = "VFX"

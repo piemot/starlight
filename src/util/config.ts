@@ -20,7 +20,7 @@ const configSchema = z.object({
 			channel: snowflakeSchema,
 			"notify-role": snowflakeSchema,
 		}),
-		types: z.record(z.string()),
+		types: z.record(z.object({ name: z.string() })),
 	}),
 });
 
@@ -36,7 +36,7 @@ export interface Config {
 			channel: SendableChannels;
 			notifyRoleId: string;
 		};
-		types: Record<string, string>;
+		types: Record<string, { name: string }>;
 	};
 }
 

@@ -1,4 +1,4 @@
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export type ServiceState = "open" | "limited" | "closed";
 export type ServicesEntry = { [name: string]: ServiceState };

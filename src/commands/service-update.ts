@@ -96,7 +96,7 @@ export default {
 			resetButtonId: nanoid(),
 		};
 
-		for (const [id, name] of services) {
+		for (const [id, { name }] of services) {
 			// default new services to closed
 			const originalState = serviceStates.get(id) ?? "closed";
 			state.services.set(id, {
