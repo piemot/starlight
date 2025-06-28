@@ -4,6 +4,7 @@ dist
 
 # Secret
 config.toml
+app.db
 
 # Platform specific
 .DS_Store

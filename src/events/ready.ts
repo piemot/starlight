@@ -19,7 +19,7 @@ export default {
 			});
 		}
 
-		await client.user.setPresence({
+		client.user.setPresence({
 			status: "online",
 			activities: [
 				{

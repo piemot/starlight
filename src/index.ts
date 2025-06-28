@@ -1,5 +1,5 @@
 import { Client, GatewayIntentBits } from "discord.js";
-import { config } from "./util/config.js";
+import { configFile } from "./util/config.js";
 import { loadEvents } from "./util/loaders.js";
 
 export const client = new Client({
@@ -33,4 +33,4 @@ for (const event of events) {
 	]);
 }
 
-void client.login(config.bot.token);
+void client.login(configFile.bot.token);

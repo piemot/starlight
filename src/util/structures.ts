@@ -4,6 +4,7 @@ import type {
 	RESTPostAPIApplicationCommandsJSONBody,
 } from "discord.js";
 import { z } from "zod";
+import type { Config } from "./config.js";
 
 /**
  * A predicate to check if the structure is valid
@@ -22,8 +23,12 @@ export type Command = {
 	 * The function to execute when the command is called
 	 *
 	 * @param interaction - The interaction of the command
+	 * @param opts - Other useful parameters, such as the global {@link Config} object
 	 */
-	execute(interaction: CommandInteraction): Promise<void> | void;
+	execute(
+		interaction: CommandInteraction,
+		opts: { config: Config },
+	): Promise<void> | void;
 };
 
 /**

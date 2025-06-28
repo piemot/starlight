@@ -1,5 +1,17 @@
-readyChannel = "1297794376571027488"
+ready-channel = "1297794376571027488"
 
 [bot]
 id = "889329360425844746"
 token = "<your token here>"
+
+[services.availability]
+channel = "1201407449840754739"
+notify-role = "997525482197242018"
+
+[services.types]
+graphics-non-animated = "Non-Animated GFX"
+graphics-animated = "Animated GFX"
+server-building = "Server Building"
+marketing = "Marketing"
+content = "Content Creation"
+video = "VFX"
