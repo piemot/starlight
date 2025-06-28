@@ -1,6 +1,12 @@
 import fs from "node:fs/promises";
 import { dirname, default as path, resolve } from "node:path";
-import type { Client, SendableChannels } from "discord.js";
+import {
+	type CategoryChannel,
+	ChannelType,
+	type Client,
+	type Message,
+	type SendableChannels,
+} from "discord.js";
 import TOML from "smol-toml";
 import { z } from "zod";
 
@@ -15,14 +21,32 @@ const configSchema = z.object({
 	}),
 	"ready-channel": snowflakeSchema,
 	"review-channel": snowflakeSchema,
+	tickets: z.object({
+		header: z.object({
+			channel: snowflakeSchema,
+			message: snowflakeSchema,
+		}),
+	}),
 	services: z.object({
 		availability: z.object({
 			channel: snowflakeSchema,
 			"notify-role": snowflakeSchema,
 		}),
-		types: z.record(z.object({ name: z.string() })),
+		types: z.record(
+			z.object({
+				name: z.string(),
+				"ticket-category": snowflakeSchema.optional(),
+				"staff-role": snowflakeSchema.optional(),
+			}),
+		),
 	}),
 });
+
+interface ServiceConfig {
+	name: string;
+	ticketCategory: CategoryChannel | null;
+	staffRoleId: string | null;
+}
 
 export interface Config {
 	bot: {
@@ -31,18 +55,22 @@ export interface Config {
 	};
 	readyChannel: SendableChannels;
 	reviewChannel: SendableChannels;
+	tickets: {
+		header: {
+			channel: SendableChannels;
+			message: Message;
+		};
+	};
 	services: {
 		availability: {
 			channel: SendableChannels;
 			notifyRoleId: string;
 		};
-		types: Record<string, { name: string }>;
+		types: Map<string, ServiceConfig>;
 	};
 }
 
 export const configFile = await loadConfigFile();
-
-// export type Config = z.infer<typeof configSchema>;
 
 async function loadConfigFile(): Promise<z.infer<typeof configSchema>> {
 	const configContents = await getConfigContents();
@@ -79,16 +107,55 @@ export async function loadConfig(client: Client): Promise<Config> {
 		throw new Error("Invalid `config.services.availability.channel`");
 	}
 
+	const ticketChannel = await client.channels.fetch(
+		configFile.tickets.header.channel,
+	);
+	if (!ticketChannel || !ticketChannel.isSendable()) {
+		throw new Error("Invalid `config.tickets.header.channel`");
+	}
+	const ticketMessage = await ticketChannel.messages.fetch(
+		configFile.tickets.header.message,
+	);
+
+	const channelTypes: [string, ServiceConfig][] = [];
+	for (const [key, details] of Object.entries(configFile.services.types)) {
+		let ticketCategory: CategoryChannel | null;
+		if (details["ticket-category"]) {
+			const channel = await client.channels.fetch(details["ticket-category"]);
+
+			if (!channel || channel.type !== ChannelType.GuildCategory) {
+				throw new Error(
+					`Invalid \`config.tickets.services.${key}.ticket-category.\``,
+				);
+			}
+			ticketCategory = channel;
+		} else {
+			ticketCategory = null;
+		}
+
+		channelTypes.push([
+			key,
+			{
+				name: details.name,
+				staffRoleId: details["staff-role"] ?? null,
+				ticketCategory,
+			},
+		]);
+	}
+
 	config = {
 		bot: configFile.bot,
 		readyChannel,
 		reviewChannel,
+		tickets: {
+			header: { channel: ticketChannel, message: ticketMessage },
+		},
 		services: {
 			availability: {
 				channel: serviceChannel,
 				notifyRoleId: configFile.services.availability["notify-role"],
 			},
-			types: configFile.services.types,
+			types: new Map(channelTypes),
 		},
 	};
 	return config;

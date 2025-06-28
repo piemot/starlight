@@ -1,3 +1,4 @@
+import dedent from "dedent";
 import {
 	ApplicationCommandOptionType,
 	AttachmentBuilder,
@@ -5,7 +6,6 @@ import {
 } from "discord.js";
 import invariant from "tiny-invariant";
 import type { Command } from "../util/structures.js";
-import dedent from "dedent";
 
 export default {
 	data: {

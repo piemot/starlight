@@ -49,7 +49,7 @@ export default {
 	async execute(interaction, { config }) {
 		invariant(interaction.inGuild(), "asserted by `data.contexts`");
 
-		const services = new Map(Object.entries(config.services.types));
+		const services = config.services.types;
 		const serviceStates = await getGuildServices(interaction.guildId);
 
 		if (services.size === 0) {
@@ -122,6 +122,8 @@ export default {
 
 		collector.on("collect", async (i) => {
 			if (i.customId === state.submitButtonId) {
+				await i.deferReply();
+
 				const stateMap: Record<string, ServiceState> = Object.fromEntries(
 					state.services.map((value, key) => [key, value.currentState]),
 				);
@@ -162,7 +164,7 @@ export default {
 					)
 					.join("\n");
 
-				await i.update({
+				await i.editReply({
 					components: [
 						{
 							type: ComponentType.Container,
