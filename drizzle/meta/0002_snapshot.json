@@ -1,8 +1,8 @@
 {
 	"version": "6",
 	"dialect": "sqlite",
-	"id": "e5ecf977-9a4a-4363-9321-27ed0cdff9d0",
-	"prevId": "35c2896a-cd07-4a5d-a242-1cfd735c5410",
+	"id": "2e6c4ec3-8e11-4f20-99d0-974064fa2eda",
+	"prevId": "e5ecf977-9a4a-4363-9321-27ed0cdff9d0",
 	"tables": {
 		"guilds": {
 			"name": "guilds",
@@ -52,6 +52,21 @@
 					"primaryKey": false,
 					"notNull": true,
 					"autoincrement": false
+				},
+				"claimed_by_id": {
+					"name": "claimed_by_id",
+					"type": "text(20)",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"status": {
+					"name": "status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "'open'"
 				}
 			},
 			"indexes": {

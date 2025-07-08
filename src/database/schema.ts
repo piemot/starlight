@@ -12,4 +12,8 @@ export const tickets = sqliteTable("tickets", {
 	id: int().primaryKey({ autoIncrement: true }).notNull(),
 	ownerId: text("owner_id", { length: 20 }).notNull(),
 	channelId: text("channel_id", { length: 20 }).unique().notNull(),
+	claimedById: text("claimed_by_id", { length: 20 }),
+	status: text("status", { enum: ["open", "claimed", "completed"] })
+		.notNull()
+		.default("open"),
 });

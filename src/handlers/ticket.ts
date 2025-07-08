@@ -1,6 +1,8 @@
+import dedent from "dedent";
 import {
 	type ButtonInteraction,
 	ButtonStyle,
+	type CommandInteraction,
 	ComponentType,
 	MessageFlags,
 	type StringSelectMenuInteraction,
@@ -10,8 +12,8 @@ import invariant from "tiny-invariant";
 import {
 	createTicket as createDbTicket,
 	deleteTicketChannel,
+	getNextTicketIndex,
 	getTicketByChannel,
-	getTicketIndex,
 	getUserTickets,
 } from "../database/tickets.js";
 import type { Config } from "../util/config.js";
@@ -90,11 +92,11 @@ export async function createTicket(
 
 	await interaction.deferReply({ ephemeral: true });
 
-	const index = await getTicketIndex();
+	const index = await getNextTicketIndex();
 	// @ts-ignore issue with `slugify` typings
 	const slug = slugify(interaction.user.username.slice(0, 20));
 	const newChannel = await serviceConfig.ticketCategory.children.create({
-		name: `${index}-${slug}`,
+		name: `🔴┃${slug}-${index}`,
 		reason: "[Starlight] Automatically created ticket",
 	});
 
@@ -105,7 +107,15 @@ export async function createTicket(
 			content: `<@&${serviceConfig.staffRoleId}>`,
 			embeds: [
 				{
-					description: "Thank you for creating a ticket!",
+					description: dedent`
+						Thank you for choosing Starlight Services! A staff member will be with you as soon as possible.
+
+						## Ticket Rules
+						- Please be patient; we are a completely free service provider. 
+								- We receive many tickets a day and handle them in the order they were received.
+						- Please do not ping staff members in your ticket except for the staff member assisting you.
+						- Do not DM staff members about your ticket status.
+						- Keep all conversation about your request in this ticket.`,
 				},
 			],
 			components: [
@@ -125,7 +135,27 @@ export async function createTicket(
 	}
 
 	await interaction.editReply({
-		content: `Created ticket: <#${newChannel.id}>`,
+		components: [
+			{
+				type: ComponentType.Container,
+				accentColor: 0x2965af,
+				components: [
+					{
+						type: ComponentType.Section,
+						components: [
+							{ type: ComponentType.TextDisplay, content: "✅ Created ticket" },
+						],
+						accessory: {
+							type: ComponentType.Button,
+							style: ButtonStyle.Link,
+							url: `https://discord.com/channels/${interaction.guildId}/${newChannel.id}`,
+							label: "Open",
+						},
+					},
+				],
+			},
+		],
+		flags: [MessageFlags.IsComponentsV2],
 	});
 }
 
@@ -161,6 +191,43 @@ export async function closeTicket(interaction: ButtonInteraction) {
 	}
 
 	await interaction.deferUpdate();
+
+	await deleteTicketChannel(interaction.channelId);
+	await interaction.channel.delete();
+}
+
+export async function closeTicketCommand(interaction: CommandInteraction) {
+	invariant(
+		interaction.channel,
+		"This function must always be called with an interaction in a channel",
+	);
+
+	const thisTicket = await getTicketByChannel(interaction.channelId);
+	if (!thisTicket) {
+		await interaction.reply({
+			components: [
+				{
+					type: ComponentType.Container,
+					accentColor: 0x9f0712,
+					components: [
+						{
+							type: ComponentType.TextDisplay,
+							content: "## How Did We Get Here?",
+						},
+						{
+							type: ComponentType.TextDisplay,
+							content: "This channel is not a ticket channel.",
+						},
+					],
+				},
+			],
+			flags: [MessageFlags.IsComponentsV2],
+			ephemeral: true,
+		});
+		return;
+	}
+
+	await interaction.deferReply();
 
 	await deleteTicketChannel(interaction.channelId);
 	await interaction.channel.delete();

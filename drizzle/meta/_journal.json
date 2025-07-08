@@ -1,20 +1,27 @@
 {
-  "version": "7",
-  "dialect": "sqlite",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "6",
-      "when": 1751068251007,
-      "tag": "0000_broken_cobalt_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1751084399708,
-      "tag": "0001_slim_wasp",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "sqlite",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "6",
+			"when": 1751068251007,
+			"tag": "0000_broken_cobalt_man",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "6",
+			"when": 1751084399708,
+			"tag": "0001_slim_wasp",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "6",
+			"when": 1751998289334,
+			"tag": "0002_jittery_millenium_guard",
+			"breakpoints": true
+		}
+	]
 }
