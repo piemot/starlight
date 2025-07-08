@@ -35,6 +35,16 @@ export default {
 					},
 				],
 			},
+			{
+				type: ApplicationCommandOptionType.Subcommand,
+				name: "claim",
+				description: "Claim the current ticket",
+			},
+			{
+				type: ApplicationCommandOptionType.Subcommand,
+				name: "complete",
+				description: "Mark this ticket as complete",
+			},
 		],
 		default_member_permissions:
 			PermissionsBitField.Flags.ManageGuild.toString(),
@@ -74,6 +84,10 @@ export default {
 				return await runClose(interaction, opts);
 			case "rename":
 				return await runRename(interaction, opts);
+			case "claim":
+				return await runClaim(interaction, opts);
+			case "complete":
+				return await runComplete(interaction, opts);
 		}
 	},
 } satisfies Command;
@@ -122,6 +136,46 @@ const runRename: Command["execute"] = async (interaction) => {
 		],
 		flags: [MessageFlags.IsComponentsV2],
 	});
+};
 
-	return;
+const runClaim: Command["execute"] = async (interaction) => {
+	invariant(interaction.isChatInputCommand());
+	invariant(interaction.channel);
+	invariant(!interaction.channel.isDMBased());
+
+	await interaction.deferReply({ ephemeral: true });
+
+	const thisTicket = await getTicketByChannel(interaction.channelId);
+	invariant(thisTicket);
+
+	await thisTicket.claimBy(interaction.user);
+
+	const owner = await interaction.client.users.fetch(thisTicket.ownerId);
+	const name = thisTicket.getName(owner.username);
+
+	await interaction.channel.edit({ name });
+
+	await interaction.editReply({
+		content: `Claimed by ${interaction.user}.`,
+	});
+};
+
+const runComplete: Command["execute"] = async (interaction) => {
+	invariant(interaction.isChatInputCommand());
+	invariant(interaction.channel);
+	invariant(!interaction.channel.isDMBased());
+
+	await interaction.deferReply({ ephemeral: true });
+
+	const thisTicket = await getTicketByChannel(interaction.channelId);
+	invariant(thisTicket);
+
+	await thisTicket.setStatus("completed");
+
+	const owner = await interaction.client.users.fetch(thisTicket.ownerId);
+	const name = thisTicket.getName(owner.username);
+
+	await interaction.channel.edit({ name });
+
+	await interaction.editReply({ content: `Marked as complete.` });
 };

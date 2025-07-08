@@ -1,11 +1,9 @@
 import { eq } from "drizzle-orm";
 import slugify from "slugify";
-import invariant from "tiny-invariant";
 import { db, tickets } from "./database.js";
+import type { User } from "discord.js";
 
 export class Ticket {
-	#data: typeof tickets.$inferSelect;
-
 	id: number;
 	ownerId: string;
 	channelId: string;
@@ -13,7 +11,6 @@ export class Ticket {
 	status: "open" | "claimed" | "completed";
 
 	constructor(data: typeof tickets.$inferSelect) {
-		this.#data = data;
 		this.id = data.id;
 		this.ownerId = data.ownerId;
 		this.channelId = data.channelId;
@@ -33,6 +30,19 @@ export class Ticket {
 			case "completed":
 				return `🟢┃${name}-${this.id}`;
 		}
+	}
+
+	async setStatus(status: "open" | "claimed" | "completed") {
+		await db.update(tickets).set({ status });
+		this.status = status;
+	}
+
+	async claimBy(claimer: User | string) {
+		const claimedById = typeof claimer === "string" ? claimer : claimer.id;
+
+		await db.update(tickets).set({ claimedById, status: "claimed" });
+		this.claimedById = claimedById;
+		this.status = "claimed";
 	}
 }
 
@@ -65,13 +75,9 @@ export async function createTicket(channelId: string, ownerId: string) {
 }
 
 export async function getNextTicketIndex() {
-	const res: { seq: number } = db.get(
+	const res: { seq: number } | undefined = db.get(
 		"SELECT seq FROM SQLITE_SEQUENCE WHERE name = 'tickets'",
 	);
 
-	invariant(
-		res && typeof res.seq === "number",
-		"guaranteed by the sqlite sequence generation",
-	);
-	return res.seq;
+	return res?.seq ?? 1;
 }
